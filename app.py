@@ -4,6 +4,7 @@ import asyncio
 from flask import Flask, request
 from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.error import TimedOut, NetworkError
 
 # Configura il bot
 TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
@@ -35,8 +36,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("Apri Web App", web_app={"url": WEB_APP_URL})]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Inviamo il pulsante all'utente
-    await update.message.reply_text("Clicca sul pulsante per aprire la Web App:", reply_markup=reply_markup)
+    try:
+        # Inviamo il pulsante all'utente con timeout
+        await update.message.reply_text("Clicca sul pulsante per aprire la Web App:", reply_markup=reply_markup, timeout=60)
+    except TimedOut:
+        logger.error("Errore: Timeout nella risposta a Telegram.")
+    except NetworkError:
+        logger.error("Errore di rete. Verifica la connessione.")
 
 # Aggiunge il comando all'application
 application.add_handler(CommandHandler("start", start))
@@ -53,8 +59,13 @@ def webhook():
     # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Processiamo l'update SOLO dopo aver inizializzato il bot
-    loop.run_until_complete(application.process_update(update))
+    try:
+        # Processiamo l'update SOLO dopo aver inizializzato il bot
+        loop.run_until_complete(application.process_update(update))
+    except TimedOut:
+        logger.error("Errore: Timeout mentre si processava l'aggiornamento.")
+    except NetworkError:
+        logger.error("Errore di rete durante il processing dell'update.")
 
     return "OK", 200
 
@@ -66,5 +77,3 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
-
-
