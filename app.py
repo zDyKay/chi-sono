@@ -9,6 +9,8 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
 app = Flask(__name__)
 bot = Bot(token=TOKEN)
+
+# Creiamo l'applicazione di Telegram
 application = Application.builder().token(TOKEN).build()
 
 # Configura il logging per debug
@@ -20,6 +22,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logga l'ID dell'utente
     await update.message.reply_text("Ciao! Il bot è attivo 🚀")
 
+# Aggiunge il comando all'application
 application.add_handler(CommandHandler("start", start))
 
 @app.route("/", methods=["GET"])
@@ -34,13 +37,19 @@ def webhook():
     # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Eseguiamo il processamento degli aggiornamenti in modo corretto
-    asyncio.run(application.process_update(update))
+    # Correzione: Avviamo l'Application prima di processare gli aggiornamenti
+    if not application.running:
+        logger.info("Inizializzazione dell'Application...")
+        asyncio.create_task(application.initialize())  # Avvia l'app in modo asincrono
+
+    # Ora possiamo processare gli aggiornamenti senza errori
+    asyncio.create_task(application.process_update(update))
 
     return "OK", 200
 
 if __name__ == "__main__":
     # Avvia il Webhook senza async
+    logger.info("Avvio del bot...")
     application.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 5000)),
