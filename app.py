@@ -17,11 +17,19 @@ application = Application.builder().token(TOKEN).build()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Variabile globale per tenere traccia dell'inizializzazione
+bot_initialized = False
+
 # Funzione per inizializzare il bot all'avvio
 async def initialize_bot():
+    global bot_initialized
+    if bot_initialized:
+        return
+
     logger.info("Inizializzazione dell'Application e del bot...")
     await application.initialize()  # Assicuriamo che il bot sia completamente pronto
     await application.bot.initialize()  # Forziamo l'inizializzazione del bot
+    bot_initialized = True  # Ora il bot è pronto
     logger.info(f"Bot inizializzato con username: {application.bot.username}")
 
 # Comando /start
@@ -45,11 +53,12 @@ def webhook():
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
     # Assicuriamoci che il bot sia stato inizializzato
-    if not application.running:
-        logger.info("Il bot non è ancora inizializzato. Inizializzazione in corso...")
+    global bot_initialized
+    if not bot_initialized:
+        logger.info("Il bot non è ancora inizializzato. Attendo l'inizializzazione prima di processare...")
         asyncio.run(initialize_bot())  # Inizializza il bot PRIMA di processare gli update
 
-    # Processiamo l'update SOLO dopo aver inizializzato il bot
+    # Ora che il bot è inizializzato, possiamo processare gli aggiornamenti
     asyncio.run(application.process_update(update))
 
     return "OK", 200
@@ -66,3 +75,4 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
+
