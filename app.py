@@ -17,6 +17,12 @@ application = Application.builder().token(TOKEN).build()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Funzione per inizializzare il bot all'avvio
+async def initialize_bot():
+    logger.info("Inizializzazione dell'Application e del bot...")
+    await application.initialize()  # Assicuriamo che il bot sia completamente pronto
+    logger.info("Application e Bot inizializzati correttamente!")
+
 # Comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logga l'ID dell'utente
@@ -37,17 +43,20 @@ def webhook():
     # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Assicuriamoci che l'application sia inizializzata correttamente
+    # Assicuriamoci che il bot sia stato inizializzato
     if not application.running:
-        logger.info("Inizializzazione dell'Application...")
-        asyncio.run(application.initialize())  # Inizializza il bot in modo sicuro
+        logger.info("Il bot non è ancora inizializzato. Inizializzazione in corso...")
+        asyncio.run(initialize_bot())  # Inizializza il bot PRIMA di processare gli update
 
-    # Eseguiamo il processing degli aggiornamenti con `asyncio.run()`
+    # Processiamo l'update SOLO dopo aver inizializzato il bot
     asyncio.run(application.process_update(update))
 
     return "OK", 200
 
 if __name__ == "__main__":
+    # Inizializza il bot PRIMA di avviare il Webhook
+    asyncio.run(initialize_bot())
+
     # Avvia il Webhook senza async
     logger.info("Avvio del bot...")
     application.run_webhook(
@@ -56,3 +65,4 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
+
