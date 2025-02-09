@@ -4,8 +4,8 @@ from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, Dispatcher, CallbackContext
 
 # Configura il bot
-TOKEN = os.getenv("TOKEN")  # Legge il token dalle variabili d'ambiente
-WEB_APP_URL = "https://your-web-app.vercel.app"  # Sostituisci con l'URL di Vercel
+TOKEN = os.getenv("7824647795:AAHdZcio1hc1k7RLEhp8u_vGMp1RAlOieoA")  # Legge il token dalle variabili d'ambiente
+WEB_APP_URL = "https://chi-sono.vercel.app"  # Sostituisci con l'URL di Vercel
 
 bot = Bot(token=TOKEN)
 app = Flask(__name__)
