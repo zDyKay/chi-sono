@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 async def initialize_bot():
     logger.info("Inizializzazione dell'Application e del bot...")
     await application.initialize()  # Assicuriamo che il bot sia completamente pronto
-    logger.info("Application e Bot inizializzati correttamente!")
+    await application.bot.initialize()  # Forziamo l'inizializzazione del bot
+    logger.info(f"Bot inizializzato con username: {application.bot.username}")
 
 # Comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,4 +66,3 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
-
