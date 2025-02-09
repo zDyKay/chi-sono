@@ -4,7 +4,8 @@ from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler
 
 # Configura il bot
-TOKEN = os.getenv("TOKEN")  # Legge il token dalle variabili d'ambiente
+TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
+WEBHOOK_URL = f"{os.getenv('RENDER_URL')}/{TOKEN}"  # Usa la variabile d'ambiente per Render URL
 WEB_APP_URL = "https://your-web-app.vercel.app"  # Sostituisci con l'URL di Vercel
 
 app = Flask(__name__)
@@ -19,6 +20,10 @@ async def start(update: Update, context):
 
 application.add_handler(CommandHandler("start", start))
 
+@app.route("/", methods=["GET"])
+def home():
+    return "Bot Telegram attivo!", 200
+
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
     """Riceve gli aggiornamenti da Telegram e li invia al bot"""
@@ -27,4 +32,13 @@ def webhook():
     return "OK", 200
 
 if __name__ == "__main__":
-    application.run_polling()
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
+    # Imposta il Webhook
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        url_path=TOKEN,
+        webhook_url=WEBHOOK_URL
+    )
