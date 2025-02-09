@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Comando /start
 async def start(update: Update, context):
-    logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logghiamo l'ID dell'utente
+    logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logga l'ID dell'utente
     await update.message.reply_text("Ciao! Il bot è attivo 🚀")
 
 application.add_handler(CommandHandler("start", start))
@@ -30,10 +30,12 @@ def webhook():
     """Riceve gli aggiornamenti da Telegram e li logga"""
     update = Update.de_json(request.get_json(), bot)
     
-    # Aggiungiamo un log per vedere cosa arriva
+    # Aggiungiamo un log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    application.update_queue.put_nowait(update)
+    # Sostituiamo la gestione degli aggiornamenti
+    application.process_update(update)
+
     return "OK", 200
 
 if __name__ == "__main__":
@@ -44,4 +46,3 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
-
