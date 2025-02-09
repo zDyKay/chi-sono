@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 # Configura il bot
 TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
-WEB_APP_URL = "https://tuo-sito.vercel.app"  # Sostituisci con il link della tua Web App
+WEB_APP_URL = "https://chi-sono.vercel.app"  # Sostituisci con il link della tua Web App
 app = Flask(__name__)
 
 # Configura il logging per debug
