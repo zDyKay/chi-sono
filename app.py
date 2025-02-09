@@ -38,7 +38,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         # Inviamo il pulsante all'utente con timeout
-        await update.message.reply_text("Clicca sul pulsante per aprire la Web App:", reply_markup=reply_markup, timeout=60)
+        await update.message.reply_text("Clicca sul pulsante per aprire la Web App:", reply_markup=reply_markup, timeout=15)
     except TimedOut:
         logger.error("Errore: Timeout nella risposta a Telegram.")
     except NetworkError:
