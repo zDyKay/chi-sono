@@ -3,7 +3,7 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, Dispatcher
 
 TOKEN = "7824647795:AAHdZcio1hc1k7RLEhp8u_vGMp1RAlOieoA"
-WEB_APP_URL = "https://your-web-app.vercel.app"
+WEB_APP_URL = "https://ChiChiamo.vercel.app"
 
 bot = Bot(token=TOKEN)
 app = Flask(__name__)
