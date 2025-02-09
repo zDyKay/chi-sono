@@ -29,7 +29,7 @@ application = loop.run_until_complete(create_application())
 # Comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logga l'ID dell'utente
-    await update.message.reply_text("Ciao! Il bot è attivo 🚀")
+    await update.message.reply_text("Chiama Guido 🚀")
 
 # Aggiunge il comando all'application
 application.add_handler(CommandHandler("start", start))
