@@ -5,7 +5,7 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
 
 # Configura il bot
-TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
+TOKEN = os.getenv("7824647795:AAHdZcio1hc1k7RLEhp8u_vGMp1RAlOieoA")  # Usa la variabile d'ambiente per il token
 app = Flask(__name__)
 bot = Bot(token=TOKEN)
 application = Application.builder().token(TOKEN).build()
