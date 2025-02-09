@@ -2,7 +2,7 @@ import os
 import logging
 from flask import Flask, request
 from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 # Configura il bot
 TOKEN = os.getenv("TOKEN")  # Usa la variabile d'ambiente per il token
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Comando /start
-async def start(update: Update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Ricevuto comando /start da {update.effective_user.id}")  # Logga l'ID dell'utente
     await update.message.reply_text("Ciao! Il bot è attivo 🚀")
 
@@ -30,10 +30,11 @@ def webhook():
     """Riceve gli aggiornamenti da Telegram e li logga"""
     update = Update.de_json(request.get_json(), bot)
     
-    # Aggiungiamo un log per vedere cosa arriva da Telegram
+    # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Non usiamo `await` qui, perché Flask non lo supporta bene
+    # Correzione: Assicuriamoci che il bot processi l'update correttamente
+    application.bot = bot
     application.process_update(update)
 
     return "OK", 200
