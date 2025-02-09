@@ -29,8 +29,12 @@ async def initialize_bot():
     logger.info("Inizializzazione dell'Application e del bot...")
     await application.initialize()  # Assicuriamo che il bot sia completamente pronto
     await application.bot.initialize()  # Forziamo l'inizializzazione del bot
+
+    # Controllo finale per confermare che il bot sia davvero pronto
+    bot_info = await application.bot.get_me()
+    logger.info(f"Bot inizializzato con username: {bot_info.username}")
+
     bot_initialized = True  # Ora il bot è pronto
-    logger.info(f"Bot inizializzato con username: {application.bot.username}")
 
 # Comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -56,16 +60,18 @@ def webhook():
     global bot_initialized
     if not bot_initialized:
         logger.info("Il bot non è ancora inizializzato. Attendo l'inizializzazione prima di processare...")
-        asyncio.run(initialize_bot())  # Inizializza il bot PRIMA di processare gli update
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(initialize_bot())  # Sincronizza l'inizializzazione del bot
 
     # Ora che il bot è inizializzato, possiamo processare gli aggiornamenti
-    asyncio.run(application.process_update(update))
+    loop.run_until_complete(application.process_update(update))
 
     return "OK", 200
 
 if __name__ == "__main__":
     # Inizializza il bot PRIMA di avviare il Webhook
-    asyncio.run(initialize_bot())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(initialize_bot())
 
     # Avvia il Webhook senza async
     logger.info("Avvio del bot...")
@@ -75,4 +81,5 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
+
 
