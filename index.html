@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini App Telegram</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Web App Telegram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #007AFF;
+        }
+    </style>
 </head>
 <body>
-    <h1>Benvenuto nella Mini App!</h1>
-    <p id="user-info">Caricamento...</p>
-    <button onclick="closeApp()">Chiudi App</button>
-
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();  // Espande la WebView a schermo intero
-
-        document.getElementById("user-info").innerText = `Ciao, ${tg.initDataUnsafe.user.first_name}!`;
-
-        function closeApp() {
-            tg.close();
-        }
-    </script>
+    <h1>Ciao! Il bot è attivo 🚀</h1>
 </body>
 </html>
