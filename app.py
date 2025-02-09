@@ -37,13 +37,13 @@ def webhook():
     # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Correzione: Avviamo l'Application prima di processare gli aggiornamenti
+    # Assicuriamoci che l'application sia inizializzata correttamente
     if not application.running:
         logger.info("Inizializzazione dell'Application...")
-        asyncio.create_task(application.initialize())  # Avvia l'app in modo asincrono
+        asyncio.run(application.initialize())  # Inizializza il bot in modo sicuro
 
-    # Ora possiamo processare gli aggiornamenti senza errori
-    asyncio.create_task(application.process_update(update))
+    # Eseguiamo il processing degli aggiornamenti con `asyncio.run()`
+    asyncio.run(application.process_update(update))
 
     return "OK", 200
 
