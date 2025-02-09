@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -33,9 +34,8 @@ def webhook():
     # Log per vedere cosa arriva da Telegram
     logger.info(f"Aggiornamento ricevuto: {update.to_dict()}")
 
-    # Correzione: Assicuriamoci che il bot processi l'update correttamente
-    application.bot = bot
-    application.process_update(update)
+    # Eseguiamo il processamento degli aggiornamenti in modo corretto
+    asyncio.run(application.process_update(update))
 
     return "OK", 200
 
@@ -47,4 +47,3 @@ if __name__ == "__main__":
         url_path=TOKEN,
         webhook_url=f"{os.getenv('RENDER_URL')}/{TOKEN}"
     )
-
