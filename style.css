@@ -1,0 +1,36 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    background-color: white;
+    border: 2px solid black;
+    touch-action: none; /* Previene lo scroll quando si usa il joystick */
+}
+
+/* Stile dei joystick */
+.joystick {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    touch-action: none;
+}
+
+#joystick-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+#joystick-right {
+    bottom: 20px;
+    right: 20px;
+}
