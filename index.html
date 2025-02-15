@@ -22,12 +22,7 @@
         canvas {
             background-color: #fff;
             border: 2px solid #000;
-            touch-action: none; /* Previene lo scroll quando si gioca */
-        }
-
-        /* Nasconde scrollbar e migliora il layout su mobile */
-        ::-webkit-scrollbar {
-            display: none;
+            touch-action: none; /* Previene lo scroll durante il gioco */
         }
     </style>
 </head>
@@ -40,7 +35,7 @@
         //    INIZIALIZZAZIONE TELEGRAM WEBAPP
         // ========================
         let tg = window.Telegram.WebApp;
-        tg.expand();  // Espande la WebApp a schermo intero
+        tg.expand();  // Espande la WebApp a schermo intero su Telegram
         console.log("Telegram WebApp inizializzata");
 
         // ========================
@@ -106,7 +101,7 @@
         }
 
         function startGame() {
-            console.log("Gioco avviato!"); 
+            console.log("Gioco avviato!");
             gameLoop();
         }
 
@@ -135,6 +130,17 @@
             player.dx = 0;
             player.dy = 0;
         });
+
+        // ========================
+        //    SPARO AUTOMATICO SENZA `setInterval("[string]")`
+        // ========================
+        function startShooting() {
+            if (directionJoystick.dx !== 0 || directionJoystick.dy !== 0) {
+                shootBullet();
+            }
+        }
+
+        setInterval(startShooting, 500); // Intervallo di fuoco ogni 500ms
 
         console.log("WebApp pronta!");
     </script>
