@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Game with NPC Follow Time</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Telegram Mini App - Game</title>
+
+    <!-- Import Telegram WebApp API -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            background-color: black; /* Black background covering the full viewport */
+            background-color: black;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,510 +22,121 @@
         canvas {
             background-color: #fff;
             border: 2px solid #000;
+            touch-action: none; /* Previene lo scroll quando si gioca */
+        }
+
+        /* Nasconde scrollbar e migliora il layout su mobile */
+        ::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
 <body>
+
     <canvas id="gameCanvas"></canvas>
+
     <script>
+        // ========================
+        //    INIZIALIZZAZIONE TELEGRAM WEBAPP
+        // ========================
+        let tg = window.Telegram.WebApp;
+        tg.expand();  // Espande la WebApp a schermo intero
+        console.log("Telegram WebApp inizializzata");
+
+        // ========================
+        //    CONFIGURAZIONE CANVAS
+        // ========================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
 
         const backgroundImage = new Image();
-        backgroundImage.src = '2-1.jpg'; // Path to your uploaded image
+        backgroundImage.src = '2-1.jpg';  // Assicurati che l'immagine sia nel percorso corretto
 
         backgroundImage.onload = function() {
             startGame();
         };
 
-        // ==========================
-        //   JOYSTICK SECTION
-        // ==========================
-
-        const movementJoystick = {
-            x: 100,
-            y: canvas.height - 150,
-            outerRadius: 50,
-            innerRadius: 30,
-            dragging: false,
-            touchId: null,
-            dx: 0,
-            dy: 0
-        };
-
-        const directionJoystick = {
-            x: canvas.width - 100,
-            y: canvas.height - 150,
-            outerRadius: 50,
-            innerRadius: 30,
-            dragging: false,
-            touchId: null,
-            dx: 0,
-            dy: 0
-        };
-
-        // Joystick event listeners
-        canvas.addEventListener('touchstart', handleTouchStart);
-        canvas.addEventListener('touchmove', handleTouchMove);
-        canvas.addEventListener('touchend', handleTouchEnd);
-
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('mouseup', handleMouseUp);
-
-        function handleTouchStart(e) {
-            e.preventDefault();
-            for (let i = 0; i < e.touches.length; i++) {
-                const touch = e.touches[i];
-                handleJoystickStart(touch.clientX, touch.clientY, touch.identifier);
-            }
-        }
-
-        function handleTouchMove(e) {
-            e.preventDefault();
-            for (let i = 0; i < e.touches.length; i++) {
-                const touch = e.touches[i];
-                handleJoystickMove(touch.clientX, touch.clientY, touch.identifier);
-            }
-        }
-
-        function handleTouchEnd(e) {
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                const touch = e.changedTouches[i];
-                handleJoystickEnd(touch.identifier);
-            }
-        }
-
-        function handleMouseDown(e) {
-            handleJoystickStart(e.clientX, e.clientY, 'mouse');
-        }
-
-        function handleMouseMove(e) {
-            handleJoystickMove(e.clientX, e.clientY, 'mouse');
-        }
-
-        function handleMouseUp(e) {
-            handleJoystickEnd('mouse');
-        }
-
-        function handleJoystickStart(x, y, id) {
-            const distMovement = Math.hypot(x - movementJoystick.x, y - movementJoystick.y);
-            const distDirection = Math.hypot(x - directionJoystick.x, y - directionJoystick.y);
-
-            if (distMovement <= movementJoystick.outerRadius) {
-                movementJoystick.dragging = true;
-                movementJoystick.touchId = id;
-            } else if (distDirection <= directionJoystick.outerRadius) {
-                directionJoystick.dragging = true;
-                directionJoystick.touchId = id;
-            }
-        }
-
-        function handleJoystickMove(x, y, id) {
-            if (movementJoystick.dragging && id === movementJoystick.touchId) {
-                updateJoystick(movementJoystick, x, y);
-                updatePlayerMovement();
-            } else if (directionJoystick.dragging && id === directionJoystick.touchId) {
-                updateJoystick(directionJoystick, x, y);
-                updatePlayerRotation();
-            }
-        }
-
-        function handleJoystickEnd(id) {
-            if (movementJoystick.touchId === id) {
-                movementJoystick.dragging = false;
-                movementJoystick.touchId = null;
-                movementJoystick.dx = 0;
-                movementJoystick.dy = 0;
-                resetPlayerMovement();
-            } else if (directionJoystick.touchId === id) {
-                directionJoystick.dragging = false;
-                directionJoystick.touchId = null;
-                directionJoystick.dx = 0;
-                directionJoystick.dy = 0;
-            }
-        }
-
-        function updateJoystick(joystick, x, y) {
-            const angle = Math.atan2(y - joystick.y, x - joystick.x);
-            const dist = Math.min(joystick.outerRadius, Math.hypot(x - joystick.x, y - joystick.y));
-            joystick.dx = dist * Math.cos(angle);
-            joystick.dy = dist * Math.sin(angle);
-        }
-
-        function drawJoystick(joystick) {
-            ctx.beginPath();
-            ctx.arc(joystick.x, joystick.y, joystick.outerRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(joystick.x + joystick.dx, joystick.y + joystick.dy, joystick.innerRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-            ctx.fill();
-        }
-
-        // ==========================
-        //   PLAYER SECTION
-        // ==========================
-
+        // ========================
+        //    GIOCO & CONTROLLI
+        // ========================
         const player = {
             x: canvas.width / 2,
             y: canvas.height / 2,
-            width: 10, // Updated player width
-            height: 10, // Updated player height
-            speed: 1, // Movement speed
-            hp: 100, // Health points
-            maxHp: 100, // Max Health points for reference
-            shield: 50, // Shield points
-            maxShield: 50, // Max Shield points for reference
-            damage: 10, // Damage value
+            width: 10,
+            height: 10,
+            speed: 2,
             dx: 0,
-            dy: 0,
-            rotation: 0, // Rotation in radians
-            range: 100 // Range for NPC detection and attack
+            dy: 0
         };
 
-        const bullets = [];
-
         function updatePlayerMovement() {
-            player.dx = movementJoystick.dx / movementJoystick.outerRadius * player.speed;
-            player.dy = movementJoystick.dy / movementJoystick.outerRadius * player.speed;
-        }
-
-        function resetPlayerMovement() {
-            player.dx = 0;
-            player.dy = 0;
-        }
-
-        function updatePlayerRotation() {
-            player.rotation = Math.atan2(directionJoystick.dy, directionJoystick.dx);
-        }
-
-        function movePlayer() {
             player.x += player.dx;
             player.y += player.dy;
 
-            // Boundary collision detection for player
+            // Evita che il giocatore esca dallo schermo
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
             if (player.y < 0) player.y = 0;
             if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
-
-            // Update camera position to follow player
-            camera.x = player.x - canvas.width / 2 / camera.zoom;
-            camera.y = player.y - canvas.height / 2 / camera.zoom;
-        }
-
-        function shootBullet() {
-            const bulletSpeed = 20;
-            bullets.push({
-                x: player.x,
-                y: player.y,
-                dx: Math.cos(player.rotation) * bulletSpeed,
-                dy: Math.sin(player.rotation) * bulletSpeed
-            });
-        }
-
-        function moveBullets() {
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const bullet = bullets[i];
-                bullet.x += bullet.dx;
-                bullet.y += bullet.dy;
-
-                // Check if the bullet hits the NPC
-                if (
-                    npc &&
-                    bullet.x > npc.x - npc.width / 2 &&
-                    bullet.x < npc.x + npc.width / 2 &&
-                    bullet.y > npc.y - npc.height / 2 &&
-                    bullet.y < npc.y + npc.height / 2
-                ) {
-                    // Bullet hits the NPC
-                    applyDamageToNPC(player.damage);
-                    bullets.splice(i, 1); // Remove the bullet
-                    if (npc.hp <= 0) {
-                        npc = null; // Remove the NPC from the game
-                    }
-                }
-
-                // Remove bullets that go off the screen
-                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
-                    bullets.splice(i, 1);
-                }
-            }
         }
 
         function drawPlayer() {
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.rotation);
             ctx.fillStyle = 'blue';
-            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
-            ctx.restore();
-
-            // Draw player health and shield bars
-            drawHealthBar(player);
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
-        function checkPlayerHP() {
-            if (player.hp < 1) {
-                displayGameOver();
-            }
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            drawPlayer();
         }
 
-        function displayGameOver() {
-            ctx.save();
-            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any transformations
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height); // Dark overlay
-
-            ctx.fillStyle = 'white';
-            ctx.font = '48px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
-            ctx.restore();
+        function gameLoop() {
+            updatePlayerMovement();
+            drawGame();
+            requestAnimationFrame(gameLoop);
         }
-
-        // ==========================
-        //   NPC SECTION
-        // ==========================
-
-        let npc = {
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            width: 10, // Updated NPC width
-            height: 10, // Updated NPC height
-            speed: 0.8, // Slightly slower than player
-            hp: 80, // Health points
-            maxHp: 80, // Max Health points for reference
-            shield: 30, // Shield points
-            maxShield: 30, // Max Shield points for reference
-            damage: 8, // Damage value
-            dx: Math.random() * 2 - 1, // Random horizontal direction
-            dy: Math.random() * 2 - 1,  // Random vertical direction
-            range: 75, // NPC detection range
-            attackRange: 40, // Range within which NPC will stop and attack
-            attackCooldown: 1000, // Attack cooldown in milliseconds
-            lastAttackTime: 0, // Time of last attack
-            lastPlayerInRangeTime: 0 // Time of last player detection
-        };
-
-        const npcBullets = [];
-
-        // Variable to control how long the NPC will continue following the player after leaving range (in seconds)
-        let npcFollowTime = 5; // Change this value as needed
-
-        function moveNPC() {
-            // Calculate distance between NPC and player
-            const distanceToPlayer = Math.hypot(npc.x - player.x, npc.y - player.y);
-
-            const now = Date.now();
-
-            if (distanceToPlayer <= npc.range) {
-                npc.lastPlayerInRangeTime = now;
-            }
-
-            if (distanceToPlayer <= npc.range || now - npc.lastPlayerInRangeTime <= npcFollowTime * 1000) {
-                // NPC moves towards the player
-                const angle = Math.atan2(player.y - npc.y, player.x - npc.x);
-                npc.dx = Math.cos(angle);
-                npc.dy = Math.sin(angle);
-                npc.x += npc.dx * npc.speed;
-                npc.y += npc.dy * npc.speed;
-
-                if (distanceToPlayer <= npc.attackRange) {
-                    attackPlayer();
-                }
-            } else {
-                // NPC moves randomly when the player is out of follow time
-                npc.x += npc.dx * npc.speed;
-                npc.y += npc.dy * npc.speed;
-
-                // Boundary collision detection for npc
-                if (npc.x < 0 || npc.x + npc.width > canvas.width) npc.dx *= -1; // Reverse direction on X axis
-                if (npc.y < 0 || npc.y + npc.height > canvas.height) npc.dy *= -1; // Reverse direction on Y axis
-            }
-        }
-
-        function attackPlayer() {
-            const now = Date.now();
-            if (now - npc.lastAttackTime > npc.attackCooldown) {
-                // NPC shoots a bullet towards the player
-                const angle = Math.atan2(player.y - npc.y, player.x - npc.x);
-                const bulletSpeed = 2.5;
-                npcBullets.push({
-                    x: npc.x,
-                    y: npc.y,
-                    dx: Math.cos(angle) * bulletSpeed,
-                    dy: Math.sin(angle) * bulletSpeed
-                });
-                npc.lastAttackTime = now;
-            }
-        }
-
-        function moveNpcBullets() {
-            for (let i = npcBullets.length - 1; i >= 0; i--) {
-                const bullet = npcBullets[i];
-                bullet.x += bullet.dx;
-                bullet.y += bullet.dy;
-
-                // Check if the bullet hits the player
-                if (
-                    bullet.x > player.x - player.width / 2 &&
-                    bullet.x < player.x + player.width / 2 &&
-                    bullet.y > player.y - player.height / 2 &&
-                    bullet.y < player.y + player.height / 2
-                ) {
-                    // Bullet hits the player
-                    applyDamageToPlayer(npc.damage);
-                    npcBullets.splice(i, 1); // Remove the bullet
-
-                    if (player.hp <= 0) {
-                        console.log('Player defeated!');
-                        // Handle player defeat (e.g., end game, respawn, etc.)
-                        checkPlayerHP(); // Check if the player is dead and trigger game over
-                    }
-                }
-
-                // Remove bullets that go off the screen
-                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
-                    npcBullets.splice(i, 1);
-                }
-            }
-        }
-
-        function drawNPC() {
-            if (npc) {
-                ctx.save();
-                ctx.translate(npc.x, npc.y);
-                ctx.fillStyle = 'red';
-                ctx.fillRect(-npc.width / 2, -npc.height / 2, npc.width, npc.height);
-                ctx.restore();
-
-                // Draw NPC health and shield bars
-                drawHealthBar(npc);
-            }
-        }
-
-        function applyDamageToNPC(damage) {
-            if (npc.shield > 0) {
-                npc.shield -= damage;
-                if (npc.shield < 0) {
-                    npc.hp += npc.shield; // Deduct remaining damage from HP
-                    npc.shield = 0;
-                }
-            } else {
-                npc.hp -= damage;
-            }
-        }
-
-        function applyDamageToPlayer(damage) {
-            if (player.shield > 0) {
-                player.shield -= damage;
-                if (player.shield < 0) {
-                    player.hp += player.shield; // Deduct remaining damage from HP
-                    player.shield = 0;
-                }
-            } else {
-                player.hp -= damage;
-            }
-        }
-
-        // ==========================
-        //   SHARED FUNCTIONS
-        // ==========================
-
-        function drawHealthBar(entity) {
-            const barWidth = entity.width * 3; // Triple the length of the bars
-            const barHeight = 1;
-            const barX = entity.x - barWidth / 2;
-            const barY = entity.y - entity.height / 2 - 12; // Positioned above the entity
-
-            // HP bar (green)
-            ctx.fillStyle = 'green';
-            ctx.fillRect(barX, barY, (entity.hp / entity.maxHp) * barWidth, barHeight);
-
-            // Shield bar (blue)
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(barX, barY + barHeight + 2, (entity.shield / entity.maxShield) * barWidth, barHeight);
-        }
-
-        function drawBullets() {
-            ctx.fillStyle = 'yellow';
-            bullets.forEach(bullet => {
-                ctx.beginPath();
-                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function drawNpcBullets() {
-            ctx.fillStyle = 'purple';
-            npcBullets.forEach(bullet => {
-                ctx.beginPath();
-                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        // ==========================
-        //   GAME LOOP AND INIT
-        // ==========================
-
-        const camera = {
-            x: player.x - canvas.width / 2,
-            y: player.y - canvas.height / 2,
-            zoom: 3 // Updated zoom level to 3
-        };
 
         function startGame() {
-            function gameLoop() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Apply zoom and camera translation
-                ctx.save();
-                ctx.scale(camera.zoom, camera.zoom);
-                ctx.translate(-camera.x, -camera.y);
-
-                // Draw the background image with camera offset
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-
-                // Move and draw player, NPC, and bullets
-                movePlayer();
-                moveNPC();
-                moveBullets();
-                moveNpcBullets();
-                drawPlayer();
-                drawNPC();
-                drawBullets();
-                drawNpcBullets();
-
-                // Check player HP to trigger game over if needed
-                checkPlayerHP();
-
-                // Reset transformation before drawing the UI elements like joysticks
-                ctx.restore();
-
-                drawJoystick(movementJoystick);
-                drawJoystick(directionJoystick);
-
-                requestAnimationFrame(gameLoop);
-            }
-
+            console.log("Gioco avviato!"); 
             gameLoop();
         }
 
-        // Shoot bullets continuously while the right analog is moved
-        setInterval(() => {
-            if (directionJoystick.dx !== 0 || directionJoystick.dy !== 0) {
-                shootBullet();
-            }
-        }, 500); // Adjust this interval for shooting speed
+        // ========================
+        //    TOUCH CONTROLS (JOYSTICK)
+        // ========================
+        let touchStartX = 0;
+        let touchStartY = 0;
 
+        canvas.addEventListener("touchstart", (e) => {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        });
+
+        canvas.addEventListener("touchmove", (e) => {
+            const touch = e.touches[0];
+            let dx = touch.clientX - touchStartX;
+            let dy = touch.clientY - touchStartY;
+
+            player.dx = dx * 0.05;  // Sensibilità movimento
+            player.dy = dy * 0.05;
+        });
+
+        canvas.addEventListener("touchend", () => {
+            player.dx = 0;
+            player.dy = 0;
+        });
+
+        console.log("WebApp pronta!");
     </script>
 </body>
 </html>
