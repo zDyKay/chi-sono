@@ -2,155 +2,20 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Telegram Mini App - 2D Game</title>
-
-    <!-- Import Telegram WebApp API -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App Telegram</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
         }
-
-        canvas {
-            background-color: white;
-            border: 2px solid black;
-            touch-action: none; /* Previene lo scroll */
-        }
-
-        /* Stile dei joystick */
-        .joystick {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            touch-action: none;
-        }
-
-        #joystick-left {
-            bottom: 20px;
-            left: 20px;
-        }
-
-        #joystick-right {
-            bottom: 20px;
-            right: 20px;
+        h1 {
+            color: #007AFF;
         }
     </style>
 </head>
 <body>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <!-- Joystick per il movimento -->
-    <div id="joystick-left" class="joystick"></div>
-    <div id="joystick-right" class="joystick"></div>
-
-    <script>
-        // ========================
-        //   INIZIALIZZAZIONE TELEGRAM WEBAPP
-        // ========================
-        let tg = window.Telegram.WebApp;
-        tg.expand();  // Espande la WebApp a schermo intero su Telegram
-        console.log("Telegram WebApp inizializzata");
-
-        // ========================
-        //   CONFIGURAZIONE CANVAS
-        // ========================
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
-
-        // ========================
-        //   GIOCO & MOVIMENTO
-        // ========================
-        const player = {
-            x: canvas.width / 2 - 15,
-            y: canvas.height / 2 - 15,
-            size: 30,
-            speed: 3,
-            dx: 0,
-            dy: 0
-        };
-
-        // ========================
-        //   GESTIONE JOYSTICK
-        // ========================
-        let movementJoystick = { dx: 0, dy: 0 };
-
-        function updatePlayerMovement() {
-            player.x += player.dx;
-            player.y += player.dy;
-
-            // Evita che il giocatore esca dallo schermo
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
-            if (player.y < 0) player.y = 0;
-            if (player.y + player.size > canvas.height) player.y = canvas.height - player.size;
-        }
-
-        function drawPlayer() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(player.x, player.y, player.size, player.size);
-        }
-
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-        }
-
-        function gameLoop() {
-            updatePlayerMovement();
-            drawGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-
-        // ========================
-        //   TOUCH CONTROLS (JOYSTICK)
-        // ========================
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        const joystickLeft = document.getElementById("joystick-left");
-
-        joystickLeft.addEventListener("touchstart", (e) => {
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-        });
-
-        joystickLeft.addEventListener("touchmove", (e) => {
-            const touch = e.touches[0];
-            let dx = touch.clientX - touchStartX;
-            let dy = touch.clientY - touchStartY;
-
-            player.dx = dx * 0.05;
-            player.dy = dy * 0.05;
-        });
-
-        joystickLeft.addEventListener("touchend", () => {
-            player.dx = 0;
-            player.dy = 0;
-        });
-
-    </script>
-
+    <h1>Ciao! Il bot è attivo 🚀</h1>
 </body>
 </html>
