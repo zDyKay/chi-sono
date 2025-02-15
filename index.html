@@ -3,164 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Telegram Mini App - Game</title>
+    <title>Telegram Mini App - 2D Game</title>
 
     <!-- Import Telegram WebApp API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #fff;
-            border: 2px solid #000;
-            touch-action: none; /* Previene lo scroll quando si gioca */
-        }
-    </style>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <canvas id="gameCanvas"></canvas>
 
-    <script>
-        // ========================
-        //    INIZIALIZZAZIONE TELEGRAM WEBAPP
-        // ========================
-        let tg = window.Telegram.WebApp;
-        tg.expand();  // Espande la WebApp a schermo intero su Telegram
-        console.log("Telegram WebApp inizializzata");
+    <!-- Importazione del codice del gioco -->
+    <script src="game.js"></script>
 
-        // ========================
-        //    CONFIGURAZIONE CANVAS
-        // ========================
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
-
-        const backgroundImage = new Image();
-        backgroundImage.src = 'https://imgur.com/a/aOUYGZQ';  // Assicurati che l'immagine sia nel percorso corretto
-
-        backgroundImage.onload = function() {
-            startGame();
-        };
-
-        // ========================
-        //    GIOCO & CONTROLLI
-        // ========================
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            width: 10,
-            height: 10,
-            speed: 2,
-            dx: 0,
-            dy: 0,
-            rotation: 0 // Rotazione del giocatore
-        };
-
-        function updatePlayerMovement() {
-            player.x += player.dx;
-            player.y += player.dy;
-
-            // Evita che il giocatore esca dallo schermo
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-            if (player.y < 0) player.y = 0;
-            if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
-        }
-
-        function drawPlayer() {
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.rotation);
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
-            ctx.restore();
-        }
-
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            drawPlayer();
-        }
-
-        function gameLoop() {
-            updatePlayerMovement();
-            drawGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        function startGame() {
-            console.log("Gioco avviato!");
-            gameLoop();
-        }
-
-        // ========================
-        //    TOUCH CONTROLS (JOYSTICK)
-        // ========================
-        let movementJoystick = { dx: 0, dy: 0 };
-        let directionJoystick = { dx: 0, dy: 0 }; // Definito correttamente!
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        canvas.addEventListener("touchstart", (e) => {
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-        });
-
-        canvas.addEventListener("touchmove", (e) => {
-            const touch = e.touches[0];
-            let dx = touch.clientX - touchStartX;
-            let dy = touch.clientY - touchStartY;
-
-            movementJoystick.dx = dx * 0.05;  
-            movementJoystick.dy = dy * 0.05;
-
-            // Aggiorna movimento del player
-            player.dx = movementJoystick.dx;
-            player.dy = movementJoystick.dy;
-        });
-
-        canvas.addEventListener("touchend", () => {
-            movementJoystick.dx = 0;
-            movementJoystick.dy = 0;
-            player.dx = 0;
-            player.dy = 0;
-        });
-
-        // ========================
-        //    SPARO AUTOMATICO SENZA `setInterval("[string]")`
-        // ========================
-        function shootBullet() {
-            console.log("Pew Pew! 🚀"); // Simulazione sparo
-        }
-
-        function startShooting() {
-            if (directionJoystick.dx !== 0 || directionJoystick.dy !== 0) {
-                shootBullet();
-            }
-        }
-
-        setInterval(startShooting, 500); // Intervallo di fuoco ogni 500ms
-
-        console.log("WebApp pronta!");
-    </script>
 </body>
 </html>
